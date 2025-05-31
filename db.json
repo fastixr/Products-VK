@@ -1,0 +1,38 @@
+{
+  "items": [
+    {
+      "id": 1,
+      "name": "Item 1",
+      "description": "Description 1",
+      "price": 100,
+      "category": "Category 1",
+      "status": "active",
+      "createdAt": "2024-03-20T10:00:00.000Z",
+      "updatedAt": "2024-03-20T10:00:00.000Z",
+      "tags": [
+        "tag1",
+        "tag2"
+      ],
+      "rating": 4.5,
+      "stock": 10,
+      "isAvailable": true
+    },
+    {
+      "isAvailable": true,
+      "stock": 123123,
+      "rating": 5,
+      "tags": [
+        "new",
+        "privet"
+      ],
+      "status": "active",
+      "category": "poka privet как дела №\"!№\"!!\"№ 123123",
+      "price": 123123,
+      "description": "test123%%%!@#!%$$@%^T#$%     ",
+      "name": "test123123%#@$@#%",
+      "createdAt": "2025-05-31T15:49:16.760Z",
+      "updatedAt": "2025-05-31T15:49:16.760Z",
+      "id": 2
+    }
+  ]
+}

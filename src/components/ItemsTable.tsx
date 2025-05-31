@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useState } from 'react';
 import {
   Table,
   TableBody,
@@ -10,40 +10,20 @@ import {
   Box,
   Typography,
   CircularProgress,
+  Pagination,
 } from '@mui/material';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { itemsApi } from '../api/client';
 import type { Item, PaginatedResponse } from '../types';
 
 export const ItemsTable = () => {
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    status,
-    error,
-  } = useInfiniteQuery<PaginatedResponse<Item>>({
-    queryKey: ['items'],
-    queryFn: ({ pageParam = 1 }) => itemsApi.getItems(pageParam as number),
-    getNextPageParam: (lastPage) => lastPage.nextPage,
-    initialPageParam: 1,
+  const [page, setPage] = useState(1);
+  const { data, status, error } = useQuery<PaginatedResponse<Item>>({
+    queryKey: ['items', page],
+    queryFn: () => itemsApi.getItems(page),
   });
 
-  const observer = useRef<IntersectionObserver>();
-  const lastItemRef = useCallback(
-    (node: HTMLTableRowElement | null) => {
-      if (isFetchingNextPage) return;
-      if (observer.current) observer.current.disconnect();
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasNextPage) {
-          fetchNextPage();
-        }
-      });
-      if (node) observer.current.observe(node);
-    },
-    [isFetchingNextPage, fetchNextPage, hasNextPage]
-  );
+  console.log('API Response:', data);
 
   if (status === 'pending') return <CircularProgress />;
   if (status === 'error') {
@@ -51,6 +31,14 @@ export const ItemsTable = () => {
     return <div>Ошибка загрузки данных</div>;
   }
   if (!data) return null;
+  if (!data.data) {
+    console.error('No data array in response:', data);
+    return <div>Нет данных для отображения</div>;
+  }
+
+  const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value);
+  };
 
   return (
     <Box sx={{ mt: 4, overflowX: 'auto' }}>
@@ -70,36 +58,36 @@ export const ItemsTable = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {data.pages.map((page) =>
-              page.data.map((item: Item, index: number) => (
-                <TableRow
-                  ref={index === page.data.length - 1 ? lastItemRef : null}
-                  key={item.id}
-                >
-                  <TableCell>{item.id}</TableCell>
-                  <TableCell sx={{ maxWidth: '150px' }}>
-                    <Typography noWrap>{item.name}</Typography>
-                  </TableCell>
-                  <TableCell sx={{ maxWidth: '200px' }}>
-                    <Typography noWrap>{item.description}</Typography>
-                  </TableCell>
-                  <TableCell>{item.price}</TableCell>
-                  <TableCell sx={{ maxWidth: '150px' }}>
-                    <Typography noWrap>{item.category}</Typography>
-                  </TableCell>
-                  <TableCell>{item.status === 'active' ? 'Активен' : 'Неактивен'}</TableCell>
-                  <TableCell>{item.rating}</TableCell>
-                  <TableCell>{item.stock}</TableCell>
-                  <TableCell>{item.isAvailable ? 'Да' : 'Нет'}</TableCell>
-                </TableRow>
-              ))
-            )}
+            {data.data.map((item: Item) => (
+              <TableRow key={item.id}>
+                <TableCell>{item.id}</TableCell>
+                <TableCell sx={{ maxWidth: '150px' }}>
+                  <Typography noWrap>{item.name}</Typography>
+                </TableCell>
+                <TableCell sx={{ maxWidth: '200px' }}>
+                  <Typography noWrap>{item.description}</Typography>
+                </TableCell>
+                <TableCell>{item.price}</TableCell>
+                <TableCell sx={{ maxWidth: '150px' }}>
+                  <Typography noWrap>{item.category}</Typography>
+                </TableCell>
+                <TableCell>{item.status === 'active' ? 'Активен' : 'Неактивен'}</TableCell>
+                <TableCell>{item.rating}</TableCell>
+                <TableCell>{item.stock}</TableCell>
+                <TableCell>{item.isAvailable ? 'Да' : 'Нет'}</TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </TableContainer>
-      {isFetchingNextPage && (
-        <Typography sx={{ mt: 2, textAlign: 'center' }}>Загрузка...</Typography>
-      )}
+      <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+        <Pagination
+          count={Math.ceil(data.total / data.limit)}
+          page={page}
+          onChange={handlePageChange}
+          color="primary"
+        />
+      </Box>
     </Box>
   );
 }; 

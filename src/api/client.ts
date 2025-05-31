@@ -10,26 +10,21 @@ export const itemsApi = {
     if (process.env.NODE_ENV === 'test') {
       const res = await fetch(`/items?_page=${page}&_limit=${limit}`);
       const data = await res.json();
-      const total = parseInt(res.headers.get('x-total-count') || '0');
-      const totalPages = Math.ceil(total / limit);
-      return {
-        data: data.data,
-        total,
-        page,
-        limit,
-        nextPage: page < totalPages ? page + 1 : null,
-      };
+      console.log('Test API Response:', data);
+      return data;
     } else {
       const response = await api.get(`/items?_page=${page}&_limit=${limit}`);
       const total = parseInt(response.headers['x-total-count'] || '0');
       const totalPages = Math.ceil(total / limit);
-      return {
-        data: response.data.data,
+      const result = {
+        data: response.data,
         total,
         page,
         limit,
         nextPage: page < totalPages ? page + 1 : null,
       };
+      console.log('API Response:', result);
+      return result;
     }
   },
 

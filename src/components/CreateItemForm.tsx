@@ -18,6 +18,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { itemsApi } from '../api/client';
 import type { CreateItemDto } from '../types';
 import { useState } from 'react';
+import type { KeyboardEvent } from 'react';
 
 const schema = yup.object({
   name: yup.string().required('Название обязательно'),
@@ -33,9 +34,72 @@ const schema = yup.object({
 
 type FormData = yup.InferType<typeof schema>;
 
+const TagsInput = ({ 
+  tags, 
+  setTags, 
+  setValue, 
+  error, 
+  errorMessage 
+}: { 
+  tags: string[], 
+  setTags: (tags: string[]) => void, 
+  setValue: (name: 'tags', value: string[]) => void,
+  error?: boolean,
+  errorMessage?: string
+}) => {
+  const [tagInput, setTagInput] = useState('');
+
+  const handleTagInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setTagInput(event.target.value);
+  };
+
+  const handleTagInputKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      if (tagInput.trim()) {
+        const newTags = [...tags, tagInput.trim()];
+        setTags(newTags);
+        setValue('tags', newTags);
+        setTagInput('');
+      }
+    }
+  };
+
+  const handleDeleteTag = (tagToDelete: string) => {
+    const newTags = tags.filter(tag => tag !== tagToDelete);
+    setTags(newTags);
+    setValue('tags', newTags);
+  };
+
+  return (
+    <Box>
+      <TextField
+        label="Теги"
+        value={tagInput}
+        onChange={handleTagInputChange}
+        onKeyDown={handleTagInputKeyDown}
+        error={error}
+        helperText={errorMessage || "Введите тег и нажмите Enter для добавления"}
+        fullWidth
+        placeholder="Введите тег и нажмите Enter"
+      />
+      <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+        {tags.map((tag) => (
+          <Chip
+            key={tag}
+            label={tag}
+            onDelete={() => handleDeleteTag(tag)}
+            color="primary"
+            variant="outlined"
+          />
+        ))}
+      </Box>
+    </Box>
+  );
+};
+
 export const CreateItemForm = () => {
   const queryClient = useQueryClient();
-  const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
 
   const {
@@ -56,24 +120,12 @@ export const CreateItemForm = () => {
     },
   });
 
-  const handleTagInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setTagInput(event.target.value);
-  };
-
-  const handleTagInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter' && tagInput.trim()) {
-      event.preventDefault();
-      const newTags = [...tags, tagInput.trim()];
-      setTags(newTags);
-      setValue('tags', newTags);
-      setTagInput('');
+  const handleFormKeyDown = (event: KeyboardEvent<HTMLFormElement>) => {
+    if (event.key === 'Enter' && event.target instanceof HTMLElement) {
+      if (event.target.tagName !== 'BUTTON') {
+        event.preventDefault();
+      }
     }
-  };
-
-  const handleDeleteTag = (tagToDelete: string) => {
-    const newTags = tags.filter(tag => tag !== tagToDelete);
-    setTags(newTags);
-    setValue('tags', newTags);
   };
 
   const createItemMutation = useMutation({
@@ -92,7 +144,12 @@ export const CreateItemForm = () => {
   const currentStatus = watch('status');
 
   return (
-    <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ maxWidth: 600, mx: 'auto', mt: 4 }}>
+    <Box 
+      component="form" 
+      onSubmit={handleSubmit(onSubmit)} 
+      onKeyDown={handleFormKeyDown}
+      sx={{ maxWidth: 600, mx: 'auto', mt: 4 }}
+    >
       <Stack spacing={3}>
         <TextField
           label="Название"
@@ -132,28 +189,13 @@ export const CreateItemForm = () => {
             <MenuItem value="inactive">Неактивен</MenuItem>
           </Select>
         </FormControl>
-        <Box>
-          <TextField
-            label="Теги"
-            value={tagInput}
-            onChange={handleTagInputChange}
-            onKeyDown={handleTagInputKeyDown}
-            error={!!errors.tags}
-            helperText={errors.tags?.message || "Нажмите Enter для добавления тега"}
-            fullWidth
-          />
-          <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            {tags.map((tag) => (
-              <Chip
-                key={tag}
-                label={tag}
-                onDelete={() => handleDeleteTag(tag)}
-                color="primary"
-                variant="outlined"
-              />
-            ))}
-          </Box>
-        </Box>
+        <TagsInput
+          tags={tags}
+          setTags={setTags}
+          setValue={setValue}
+          error={!!errors.tags}
+          errorMessage={errors.tags?.message}
+        />
         <TextField
           label="Рейтинг"
           type="number"

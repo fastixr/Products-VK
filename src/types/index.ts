@@ -1,4 +1,4 @@
-export type Item = {
+export interface Item {
   id: number;
   name: string;
   description: string;
@@ -11,24 +11,14 @@ export type Item = {
   rating: number;
   stock: number;
   isAvailable: boolean;
-};
+}
 
-export type CreateItemDto = {
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  status: 'active' | 'inactive';
-  tags: string[];
-  rating: number;
-  stock: number;
-  isAvailable: boolean;
-};
+export interface CreateItemDto extends Omit<Item, 'id' | 'createdAt' | 'updatedAt'> {}
 
-export type PaginatedResponse<T> = {
+export interface PaginatedResponse<T> {
   data: T[];
   total: number;
   page: number;
   limit: number;
   nextPage: number | null;
-}; 
+} 

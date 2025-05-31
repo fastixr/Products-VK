@@ -33,6 +33,22 @@
       "createdAt": "2025-05-31T15:49:16.760Z",
       "updatedAt": "2025-05-31T15:49:16.760Z",
       "id": 2
+    },
+    {
+      "isAvailable": true,
+      "stock": 5,
+      "rating": 5,
+      "tags": [
+        "privet"
+      ],
+      "status": "active",
+      "category": "kak dela",
+      "price": 12312,
+      "description": "фывфывфывasdaddas@#!@#!@#12312321",
+      "name": "123123№\"!№!\"№!\"!\"№фывфывфasdasdas",
+      "createdAt": "2025-05-31T16:48:38.832Z",
+      "updatedAt": "2025-05-31T16:48:38.832Z",
+      "id": 3
     }
   ]
 }

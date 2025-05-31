@@ -4,11 +4,12 @@ import { configDefaults } from 'vitest/config'
 
 export default defineConfig({
   plugins: [react()],
+  base: '/Products-VK/',
   test: {
-    ...configDefaults,
-    environment: 'jsdom',
     globals: true,
-    setupFiles: './src/setupTests.ts',
+    environment: 'jsdom',
+    setupFiles: ['./src/setupTests.ts'],
+    exclude: [...configDefaults.exclude, 'e2e/*'],
     coverage: {
       reporter: ['text', 'json', 'html'],
     },
